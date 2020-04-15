@@ -63,6 +63,11 @@ def diff_of_means(data_1, data_2):
 #置换检验  permutation  test #####
 #################################
 
+#permutation test on frog data
+# null hypothesis is the distribution of strike force for the two frog are identical
+# the test difference=the observed difference
+#p = np.sum(he test difference >=the observed difference) / len(test)
+
 #often use permutation when the sample is small
 
 #根据原有SZIE打乱原有数据
@@ -141,11 +146,11 @@ def draw_bs_reps(data,func, size=1):
         bs_replicates[i] = bootstrap_replicate_1d(data,func)
 
     return bs_replicates
-
+# A one-sample bootstrap hypothesis test
 # only know the mean force of  frog c is 550
 # don't have the original data, cannot do a permutation test
-
 # null hypothesis the mean force of frog b and c is equal
+#p = np.sum (bs_replicates >= np.mean(force_b)) / 10000
 
 # Make an array of translated impact forces: translated_force_b
 force_c = force_b-np.mean(force_b)+550
@@ -187,3 +192,121 @@ bs_replicates = bs_replicates_a-bs_replicates_b
 # Compute and print p-value: p
 p = np.sum(bs_replicates >= empirical_diff_means)/ 10000
 print('p-value =', p)
+
+
+
+###################
+
+
+# Compute the difference in mean sperm count: diff_means
+diff_means = np.mean(control)-np.mean(treated)
+
+# Compute mean of pooled data: mean_count
+mean_count = np.mean(np.concatenate((control,treated)))
+
+# Generate shifted data sets
+control_shifted = control - np.mean(control) + mean_count
+treated_shifted = treated - np.mean(treated) + mean_count
+
+# Generate bootstrap replicates
+bs_reps_control = draw_bs_reps(control_shifted,
+                       np.mean, size=10000)
+bs_reps_treated = draw_bs_reps(treated_shifted,
+                       np.mean, size=10000)
+
+# Get replicates of difference of means: bs_replicates
+bs_replicates = bs_reps_control-bs_reps_treated
+
+# Compute and print p-value: p
+p = np.sum(bs_replicates >= np.mean(control) - np.mean(treated)) \
+            / len(bs_replicates)
+print('p-value =', p)
+
+
+# 153 House Democrats and 136 Republicans voted yea. However, 91 Democrats and 35 Republicans voted nay.
+# Did party affiliation make a difference in the vote?
+
+
+#the probability of observing a test statistic equally or more extreme than
+#the one you observed, given that the null hypothesis is true.
+
+##############################################
+# The vote for the Civil Rights Act in 1964 ####
+##############################################
+
+#the null hypothesis is the fraction of yea vote has no difference between two parties
+#p = np.sum(perm_replicates <= 153/244(the observed fraction)) / len(perm_replicates)
+
+
+import numpy as np
+
+def permutation_sample(data1, data2):
+    """Generate a permutation sample from two data sets."""
+
+    # Concatenate the data sets: data
+    data = np.concatenate((data1,data2))
+
+    # Permute the concatenated array: permuted_data
+    permuted_data = np.random.permutation(data)
+
+
+def draw_perm_reps(data_1, data_2, func, size=1):
+    """Generate multiple permutation replicates."""
+
+    # Initialize array of replicates: perm_replicates
+    perm_replicates = np.empty(size)
+
+    for i in range(size):
+        # Generate permutation sample
+        perm_sample_1, perm_sample_2 = permutation_sample(data_1,data_2)
+
+        # Compute the test statistic
+        perm_replicates[i] = func(perm_sample_1,perm_sample_2)
+    return perm_replicates
+
+# Construct arrays of data: dems, reps
+dems = np.array([True] * 153 + [False] * 91)
+reps = np.array([True] * 136 + [False] * 35)
+
+def frac_yea_dems(dems, reps):
+    """Compute fraction of Democrat yea votes."""
+    frac =np.sum(dems)/ len(dems)
+    return frac
+
+# Acquire permutation samples: perm_replicates
+perm_replicates = draw_perm_reps(dems,reps,frac_yea_dems, size=10000)
+
+# Compute and print p-value: p
+p = np.sum(perm_replicates <= 153/244) / len(perm_replicates)
+
+
+##########################################
+#Hypothesis test on Pearson correlation ##
+##########################################
+
+
+def pearson_r(x, y):
+    """Compute Pearson correlation coefficient between two arrays."""
+    # Compute correlation matrix: corr_mat
+    corr_mat=np.corrcoef(x,y)
+
+
+    # Return entry [0,1]
+    return corr_mat[0,1]
+
+r_obs = pearson_r(illiteracy,fertility)
+
+# Initialize permutation replicates: perm_replicates
+perm_replicates = np.empty(10000)
+
+# Draw replicates
+for i in range(10000):
+    # Permute illiteracy measurments: illiteracy_permuted
+    illiteracy_permuted = np.random.permutation(illiteracy)
+
+    # Compute Pearson correlation
+    perm_replicates[i] = pearson_r(illiteracy_permuted,fertility)
+
+# Compute p-value: p
+p = np.sum(perm_replicates>=r_obs)/10000
+print('p-val =', p)
