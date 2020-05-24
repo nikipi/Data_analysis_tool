@@ -1,5 +1,61 @@
 #permutation sampling is a great way to simulate
 # the hypothesis that two variables have identical probability distributions.
+# e.g to test if two subsample comes from the same population 
+
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def permutation_sample(data1,data2):
+    data=np.concatenate((data1,data2))
+
+    permutated_data=np.random.permutation(data)
+
+    sample1=permutated_data[:len(data1)]
+    sample2=permutated_data[len(data1):]
+
+    return sample1,sample2
+
+def exact_mc_perm_test(xs, ys, nmc):
+    n, k = len(xs), 0
+    diff = np.abs(np.mean(xs) - np.mean(ys))
+    # difference on smaple means
+    zs = np.concatenate([xs, ys])
+
+    list=np.empty(nmc)
+    for j in range(999):
+        np.random.shuffle(zs) # shuffle for 999 tinmes
+
+        list[j]=np.abs(np.mean(zs[:n]) - np.mean(zs[n:]))
+        k += diff < np.abs(np.mean(zs[:n]) - np.mean(zs[n:]))
+    return list
+
+xs = np.array([24,43,58,67,61,44,67,49,59,52,62,50])
+ys = np.array([42,43,65,26,33,41,19,54,42,20,17,60,37,42,55,28])
+list_a=exact_mc_perm_test(xs, ys, 999)
+print(list_a)
+
+
+sns.set_palette("hls") #设置所有图的颜色，使用hls色彩空间
+sns.distplot(list_a,color="r",bins=30,kde=True) #kde=true，显示拟合曲线
+plt.title('Permutation Test')
+plt.xlabel('difference')
+plt.ylabel('distribution')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
