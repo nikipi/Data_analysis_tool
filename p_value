@@ -1,0 +1,20 @@
+# import numpy as np
+# import pandas as pd
+# import matplotlib.pyplot as plt
+#
+# import seaborn as sns
+# from scipy import stats
+#
+# sample=pd.Series(np.random.poisson(2,20))
+#
+# sample_mean=sample.mean()
+# sample_std=sample.std()
+# print('sample mean is %d'%sample_mean)
+# print('sample std is %d'%sample_std)
+#
+# n=20
+# pop_mean=0.5
+#
+# t,p_2tailed=stats.ttest_1samp(sample,pop_mean)
+#
+# print( 't-value t=%d, p-value=%d' %(t,p_2tailed))
